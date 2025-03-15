@@ -128,4 +128,55 @@ The system uses a weighted scoring approach to detect suspicious behavior:
 
 1. Clone the repository
 
+# Risk Classifier API
+
+FastAPI application for real-time risk classification and feature extraction from proctoring data.
+
+## Local Development
+
+1. Install dependencies:
+```bash
+pip install -r requirements.txt
 ```
+
+2. Set up environment variables:
+Create a `.env` file with:
+```
+SUPABASE_URL=your_supabase_url
+SUPABASE_KEY=your_supabase_key
+```
+
+3. Run the development server:
+```bash
+uvicorn src.main:app --reload --port 8000
+```
+
+## Deployment on Render
+
+1. Create a new Web Service on Render
+2. Connect your GitHub repository
+3. Use the following settings:
+   - Name: risk-classifier-api
+   - Environment: Python
+   - Build Command: `pip install -r requirements.txt`
+   - Start Command: `gunicorn src.main:app --workers 4 --worker-class uvicorn.workers.UvicornWorker --bind 0.0.0.0:$PORT`
+
+4. Add environment variables:
+   - SUPABASE_URL
+   - SUPABASE_KEY
+
+## API Documentation
+
+Once deployed, access the API documentation at:
+- Swagger UI: `https://your-app.onrender.com/docs`
+- ReDoc: `https://your-app.onrender.com/redoc`
+
+## Available Endpoints
+
+### Features
+- POST `/features/extract`: Extract features from proctoring events
+- GET `/features/test`: Test endpoint
+
+### Scoring
+- POST `/scoring/calculate`: Calculate risk scores
+- GET `/scoring/summary/{exam_id}`: Get exam risk summary
