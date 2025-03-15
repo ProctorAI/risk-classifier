@@ -1,9 +1,9 @@
 services:
+  # A Docker web service
   - type: web
-    name: risk-classifier-api
-    env: python
+    name: fastapi-example
+    runtime: python
+    plan: free
+    autoDeploy: false
     buildCommand: pip install -r requirements.txt
-    startCommand: gunicorn src.main:app --workers 4 --worker-class uvicorn.workers.UvicornWorker --bind 0.0.0.0:$PORT
-    envVars:
-      - key: PYTHON_VERSION
-        value: 3.11.0 
+    startCommand: uvicorn src.main:app --host 0.0.0.0 --port $PORT
