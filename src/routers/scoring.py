@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 import pandas as pd
 from pydantic import BaseModel
 import pytz
-
+import uuid
 from src.ml.utils.database import get_supabase_client
 from src.ml.features.mouse_features.extractor import MouseFeatureExtractor
 from src.ml.features.keyboard_features.extractor import KeyboardFeatureExtractor
@@ -21,7 +21,7 @@ def get_utc_now() -> datetime:
 
 # Request Models
 class RiskScoreRequest(BaseModel):
-    exam_id: str
+    test_id: uuid.UUID
     interval_seconds: int = 300  # Default 5 minutes in seconds
     window_size_seconds: int = 900  # Default 15 minutes rolling window
 
@@ -35,7 +35,7 @@ class RiskScore(BaseModel):
     window_score: float
 
 class RiskScoreResponse(BaseModel):
-    exam_id: str
+    test_id: uuid.UUID
     intervals_processed: int
     risk_scores: List[RiskScore]
 
@@ -129,7 +129,7 @@ async def calculate_risk_scores(request: RiskScoreRequest):
     Calculate risk scores for an exam using a rolling window
     
     Args:
-        request: RiskScoreRequest containing exam_id, interval_seconds, and window_size_seconds
+        request: RiskScoreRequest containing test_id, interval_seconds, and window_size_seconds
     """
     try:
         # Get Supabase client
@@ -142,7 +142,7 @@ async def calculate_risk_scores(request: RiskScoreRequest):
         # Get events only for the rolling window
         response = supabase.table('proctoring_logs')\
             .select('*')\
-            .eq('exam_id', request.exam_id)\
+            .eq('test_id', request.test_id)\
             .gte('created_at', window_start.isoformat())\
             .lte('created_at', current_time.isoformat())\
             .order('created_at')\
@@ -188,7 +188,7 @@ async def calculate_risk_scores(request: RiskScoreRequest):
                     .update(update_data)\
                     .gte('created_at', start_iso)\
                     .lt('created_at', end_iso)\
-                    .eq('exam_id', request.exam_id)\
+                    .eq('test_id', request.test_id)\
                     .execute()
                 
                 updates.append(RiskScore(
@@ -208,7 +208,7 @@ async def calculate_risk_scores(request: RiskScoreRequest):
             raise HTTPException(status_code=500, detail="Failed to process any intervals successfully")
         
         return RiskScoreResponse(
-            exam_id=request.exam_id,
+            test_id=request.test_id,
             intervals_processed=len(updates),
             risk_scores=updates
         )
@@ -216,8 +216,8 @@ async def calculate_risk_scores(request: RiskScoreRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/summary/{exam_id}")
-async def get_exam_risk_summary(exam_id: str):
+@router.get("/summary/{test_id}")
+async def get_exam_risk_summary(test_id: uuid.UUID):
     """Get risk score summary for an exam"""
     try:
         supabase = get_supabase_client()
@@ -225,7 +225,7 @@ async def get_exam_risk_summary(exam_id: str):
         # Get all scored events for this exam
         response = supabase.table('proctoring_logs')\
             .select('risk_level, risk_score, mouse_score, keyboard_score, window_score')\
-            .eq('exam_id', exam_id)\
+            .eq('test_id', test_id)\
             .not_.is_('risk_score', 'null')\
             .execute()
             
@@ -250,7 +250,7 @@ async def get_exam_risk_summary(exam_id: str):
             })
         
         return {
-            'exam_id': exam_id,
+            'test_id': test_id,
             'risk_summary': summary
         }
         

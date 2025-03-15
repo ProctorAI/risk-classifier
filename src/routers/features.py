@@ -4,6 +4,7 @@ from datetime import datetime, timedelta
 import pandas as pd
 from pydantic import BaseModel
 import pytz
+import uuid
 
 from src.ml.utils.database import get_supabase_client
 from src.ml.features.mouse_features.extractor import MouseFeatureExtractor
@@ -16,7 +17,7 @@ router = APIRouter(
 )
 
 class FeaturesRequest(BaseModel):
-    exam_id: str
+    test_id: uuid.UUID
     interval_seconds: int = 300  # Default 5 minutes in seconds
     fallback_limit: int = 100  # Number of most recent events to use if no events in interval
 
@@ -29,7 +30,7 @@ class IntervalFeatures(BaseModel):
     event_count: int  # Added to show how many events were processed
 
 class FeaturesResponse(BaseModel):
-    exam_id: str
+    test_id: uuid.UUID
     intervals_processed: int
     features: List[IntervalFeatures]
     used_fallback: bool  # Indicates if we used fallback data
@@ -59,7 +60,7 @@ async def extract_features(request: FeaturesRequest):
         # Get events for the time window
         response = supabase.table('proctoring_logs')\
             .select('*')\
-            .eq('exam_id', request.exam_id)\
+            .eq('test_id', request.test_id)\
             .gte('created_at', window_start.isoformat())\
             .lte('created_at', current_time.isoformat())\
             .order('created_at')\
@@ -70,7 +71,7 @@ async def extract_features(request: FeaturesRequest):
             used_fallback = True
             response = supabase.table('proctoring_logs')\
                 .select('*')\
-                .eq('exam_id', request.exam_id)\
+                .eq('test_id', request.test_id)\
                 .order('created_at', desc=True)\
                 .limit(request.fallback_limit)\
                 .execute()
@@ -108,7 +109,7 @@ async def extract_features(request: FeaturesRequest):
         )
         
         return FeaturesResponse(
-            exam_id=request.exam_id,
+            test_id=request.test_id,
             intervals_processed=1,
             features=[interval_features],
             used_fallback=used_fallback
