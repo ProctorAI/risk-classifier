@@ -38,6 +38,7 @@ The ProctorAI system consists of several interconnected components:
   - Runs ML models for suspicious activity detection
   - Assigns risk scores to potential cheating events
   - Stores predictions back in Supabase
+  - humanly intuited
 
 ### 5. Admin Dashboard ([This Repository](https://github.com/CubeStar1/proctorai-admin))
 - Built with Next.js, and TailwindCSS
