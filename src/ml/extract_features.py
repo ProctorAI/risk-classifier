@@ -39,6 +39,7 @@ def verify_risk_scores(df: pd.DataFrame) -> None:
     return True
 
 def process_exam_data(events: list, window_size: int = 30) -> pd.DataFrame:
+
     """Process exam events and extract features
     
     Args:
@@ -50,7 +51,6 @@ def process_exam_data(events: list, window_size: int = 30) -> pd.DataFrame:
     """
     # Convert to DataFrame
     df = pd.DataFrame(events)
-    
     # Debug print
     print("\nData structure example:")
     print("Columns:", df.columns.tolist())

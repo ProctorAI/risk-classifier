@@ -1,13 +1,13 @@
-# ProctorAI ML Service
+# NEST ML Service
 
-This is the ML service for ProctorAI, an AI-powered online examination proctoring system. This repository contains the backend code for the ML service.
+This is the ML service for NEST, an AI-powered online examination proctoring system. This repository contains the backend code for the ML service.
 
 
-![ProctorAI Architecture](./images/architecture/architecture-proctorai.webp)
+![NEST Architecture](./images/architecture/architecture-nest.webp)
 
 ## Project Architecture
 
-The ProctorAI system consists of several interconnected components:
+The NEST system consists of several interconnected components:
 
 ### 1. Browser Extension (Chrome/Edge)
 - Built with React and Manifest V3
@@ -15,7 +15,7 @@ The ProctorAI system consists of several interconnected components:
 - Communicates with the exam interface via WebSocket/API
 - Sends event logs to the backend for analysis
 
-### 2. Frontend ([Link](https://github.com/CubeStar1/proctorai-frontend))
+### 2. Frontend ([Link](https://github.com/ProctorAI/exam-frontend))
 - Marketing website and exam portal demo
 - Built with Next.js and TailwindCSS
 - Features:
@@ -24,14 +24,14 @@ The ProctorAI system consists of several interconnected components:
   - Documentation for integration
 
 
-### 3. Backend ([Link](https://github.com/CubeStar1/proctorai-admin))
+### 3. Backend ([Link](https://github.com/ProctorAI/admin-dashboard))
 - Built with Next.js for API routes
 - Handles:
   - Event log processing from the extension
   - Communication with Supabase database
   - Data serving to admin dashboard
 
-### 4. AI/ML Service ([This Repository](https://github.com/CubeStar1/proctorai-ai-service))
+### 4. AI/ML Service ([This Repository](https://github.com/ProctorAI/risk-classifier))
 - Built with FastAPI and Python
 - Features:
   - Fetches user logs from Supabase
@@ -40,7 +40,7 @@ The ProctorAI system consists of several interconnected components:
   - Stores predictions back in Supabase
   - humanly intuited
 
-### 5. Admin Dashboard ([This Repository](https://github.com/CubeStar1/proctorai-admin))
+### 5. Admin Dashboard ([This Repository](https://github.com/ProctorAI/admin-dashboard))
 - Built with Next.js, and TailwindCSS
 - Features:
   - Real-time monitoring of exam sessions
@@ -125,6 +125,13 @@ The system uses a weighted scoring approach to detect suspicious behavior:
    - Medium Risk: 31-70
    - High Risk: 71-100
 
+
+## ML based scoring: 
+
+- The ML model is trained on a dataset of suspicious and non-suspicious behavior.
+- The model is trained using a combination of mouse, keyboard, and window features.
+- We use a Random Forest Model and a Multivariate Regression Model to assign scores to the events.
+
 ## Getting Started
 
 1. Clone the repository
@@ -160,17 +167,12 @@ uvicorn src.main:app --reload --port 8000
    - Name: risk-classifier-api
    - Environment: Python
    - Build Command: `pip install -r requirements.txt`
-   - Start Command: `gunicorn src.main:app --workers 4 --worker-class uvicorn.workers.UvicornWorker --bind 0.0.0.0:$PORT`
+   - Start Command: `uvicorn src.main:app --host 0.0.0.0 --port $PORT`
 
 4. Add environment variables:
    - SUPABASE_URL
    - SUPABASE_KEY
 
-## API Documentation
-
-Once deployed, access the API documentation at:
-- Swagger UI: `https://your-app.onrender.com/docs`
-- ReDoc: `https://your-app.onrender.com/redoc`
 
 ## Available Endpoints
 
@@ -180,4 +182,4 @@ Once deployed, access the API documentation at:
 
 ### Scoring
 - POST `/scoring/calculate`: Calculate risk scores
-- GET `/scoring/summary/{exam_id}`: Get exam risk summary
+- GET `/scoring/summary/{test_id}`: Get exam risk summary
